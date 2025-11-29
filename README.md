@@ -40,36 +40,7 @@ INNER JOIN persona ag ON aga.id_agente = ag.id
 
 <hr>
 
-<h2>Ejercicio 2 — Características con contenido por propiedad</h2>
-
-<h3>Enunciado</h3>
-<p>
-Obtener todas las características registradas para cada propiedad, mostrando:
-</p>
-<ul>
-  <li>propiedad (id, dirección)</li>
-  <li>característica (nombre y tipo)</li>
-  <li>contenido asignado</li>
-</ul>
-
-<h3>Resolución sugerida</h3>
-<pre><code>select
-    p.id,
-    p.direccion,
-    c.nombre as caracteristica,
-    c.tipo,
-    cp.contenido
-from caracteristica_propiedad cp
-inner join propiedad p
-    on cp.id_propiedad = p.id
-inner join caracteristica c
-    on c.id = cp.id_caracteristica
-order by p.id, c.nombre;
-</code></pre>
-
-<hr>
-
-<h2>Ejercicio 3 — Procedimiento para registrar visitas por rango</h2>
+<h2>Ejercicio 2 — Procedimiento para registrar visitas por rango</h2>
 
 <h3>Enunciado</h3>
 <p>
