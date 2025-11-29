@@ -19,27 +19,23 @@ Para cada propiedad mostrar:
 </ul>
 
 <h3>Resolución sugerida</h3>
-<pre><code>with asignacion_minima as (
-    select 
-        id_propiedad,
-        min(fecha_hora_desde) as inicio
-    from agente_asignado
-    group by id_propiedad
+<pre><code>WITH primera_asignacion AS (
+SELECT aga.id_propiedad, MIN(aga.fecha_hora_desde) fecha_min_asig
+FROM agente_asignado aga
+GROUP BY aga.id_propiedad
+),
+ cant_agentes AS (
+SELECT aga.id_propiedad, COUNT(*) cant_ags
+FROM agente_asignado aga
+GROUP BY aga.id_propiedad
 )
-select 
-    p.id,
-    p.direccion,
-    ag_ini.id_agente as agente_inicial,
-    (select count(*) 
-     from agente_asignado aa
-     where aa.id_propiedad = p.id) as total_agentes
-from propiedad p
-inner join asignacion_minima am 
-    on am.id_propiedad = p.id
-inner join agente_asignado ag_ini
-    on ag_ini.id_propiedad = am.id_propiedad
-   and ag_ini.fecha_hora_desde = am.inicio
-order by p.id;
+
+SELECT pdad.id, pdad.direccion, ag.id, ag.nombre, ag.apellido, ca.cant_ags
+FROM cant_agentes ca
+INNER JOIN primera_asignacion pa ON pa.id_propiedad=ca.id_propiedad
+INNER JOIN propiedad pdad ON pdad.id = ca.id_propiedad
+INNER JOIN agente_asignado aga ON aga.id_propiedad=pa.id_propiedad AND pa.fecha_min_asig = aga.fecha_hora_desde
+INNER JOIN persona ag ON aga.id_agente = ag.id
 </code></pre>
 
 <hr>
