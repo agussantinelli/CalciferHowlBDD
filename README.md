@@ -53,32 +53,30 @@ Crear un procedimiento almacenado <code>visitas_por_periodo</code> que reciba un
 </ul>
 
 <h3>Resolución sugerida</h3>
-<pre><code>delimiter $$
+<pre><code>USE `inmobiliaria_calciferhowl`;
+DROP procedure IF EXISTS `inmobiliaria_calciferhowl`.`visitas_por_periodo`;
+;
 
-create procedure visitas_por_periodo (
-    in p_desde datetime,
-    in p_hasta datetime
+DELIMITER $$
+USE `inmobiliaria_calciferhowl`$$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `visitas_por_periodo`(
+IN fecha_desde DATETIME,
+IN fecha_hasta DATETIME
 )
-begin
-    select
-        cli.nombre as nombre_cliente,
-        cli.apellido as apellido_cliente,
-        p.direccion,
-        ag.nombre as nombre_agente,
-        ag.apellido as apellido_agente,
-        v.fecha_hora_visita
-    from visita v
-    inner join persona cli
-        on cli.id = v.id_cliente
-    inner join persona ag
-        on ag.id = v.id_agente
-    inner join propiedad p
-        on p.id = v.id_propiedad
-    where v.fecha_hora_visita between p_desde and p_hasta
-    order by v.fecha_hora_visita;
-end $$
+BEGIN
+SELECT 
+cli.nombre, cli.apellido, pdad.direccion, CONCAT(ag.nombre, " ", ag.apellido) "Nombre Agente"
+FROM visita vis
+INNER JOIN persona cli ON cli.id = vis.id_cliente
+INNER JOIN persona ag ON ag.id = vis.id_agente
+INNER JOIN propiedad pdad ON pdad.id = vis.id_propiedad
+WHERE vis.fecha_hora_visita BETWEEN fecha_desde AND fecha_hasta;
+END$$
 
-delimiter ;
+DELIMITER ;
+;
+
+
 </code></pre>
 
 <hr><hr>
