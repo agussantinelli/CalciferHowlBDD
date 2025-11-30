@@ -247,39 +247,17 @@ Para cada propiedad mostrar:
 
 <h4>Resolución sugerida</h4>
 
-<pre><code>WITH primera_asignacion AS (
-    SELECT
-        aga.id_propiedad,
-        MIN(aga.fecha_hora_desde) AS fecha_min_asig
-    FROM agente_asignado aga
-    GROUP BY aga.id_propiedad
-),
-cant_agentes AS (
-    SELECT
-        aga.id_propiedad,
-        COUNT(*) AS cant_ags
-    FROM agente_asignado aga
-    GROUP BY aga.id_propiedad
+<pre><code>WITH datos_props AS (
+SELECT aga.id_propiedad, COUNT(*) cant_ags, MIN(aga.fecha_hora_desde) prim_fecha
+FROM agente_asignado aga
+group by aga.id_propiedad
 )
-
-SELECT
-    pdad.id,
-    pdad.direccion,
-    ag.id           AS id_agente_inicial,
-    ag.nombre,
-    ag.apellido,
-    ca.cant_ags
-FROM cant_agentes ca
-INNER JOIN primera_asignacion pa
-    ON pa.id_propiedad = ca.id_propiedad
-INNER JOIN propiedad pdad
-    ON pdad.id = ca.id_propiedad
-INNER JOIN agente_asignado aga
-    ON aga.id_propiedad     = pa.id_propiedad
-   AND aga.fecha_hora_desde = pa.fecha_min_asig
-INNER JOIN persona ag
-    ON ag.id = aga.id_agente
-ORDER BY pdad.id;
+SELECT pdad.id, pdad.direccion, ag.id as id_agente, ag.nombre as nombre_agente, ag.apellido as apellido_agente,
+dp.cant_ags
+FROM datos_props dp 
+INNER JOIN agente_asignado aga ON dp.id_propiedad=aga.id_propiedad AND aga.fecha_hora_desde=dp.prim_fecha
+INNER JOIN propiedad pdad ON pdad.id=aga.id_propiedad
+INNER JOIN persona ag ON ag.id=aga.id_agente
 </code></pre>
 
 <hr />
