@@ -166,7 +166,7 @@ INNER JOIN total_garantias tg
     ON tg.id_solicitud = sol.id
 INNER JOIN garantias_aprobadas ga
     ON ga.id_solicitud = sol.id
-WHERE ga.cant_gar_ap < 2;
+WHERE ga.cant_gar_ap &lt; 2;
 </code></pre>
 
 <hr>
@@ -232,7 +232,6 @@ Diseñar el modelo relacional para la entidad futura <code>publicacion</code> de
 <hr>
 <h2>🧩 Parcial 1 – Inmobiliaria Calcifer &amp; Howl</h2>
 
-<!-- CH-AD01 -->
 <h3>CH-AD01 – Agentes y propiedades gestionadas</h3>
 
 <h4>Enunciado</h4>
@@ -285,7 +284,6 @@ ORDER BY pdad.id;
 
 <hr />
 
-<!-- CH-AD02 -->
 <h3>CH-AD02 – Procedimiento de visitas por período</h3>
 
 <h4>Enunciado</h4>
@@ -331,7 +329,6 @@ DELIMITER ;
 
 <hr />
 
-<!-- CH-AD03 -->
 <h3>CH-AD03 – Normalizar la situación de las propiedades</h3>
 
 <h4>Enunciado</h4>
@@ -386,7 +383,6 @@ ALTER TABLE propiedad
 
 <h2>🧩 Parcial 2 – Inmobiliaria Calcifer &amp; Howl</h2>
 
-<!-- CH-AD04 -->
 <h3>CH-AD04 – Solicitudes con garantías insuficientes</h3>
 
 <h4>Enunciado</h4>
@@ -444,7 +440,6 @@ WHERE ga.cant_aprob &lt; 2
 
 <hr />
 
-<!-- CH-AD05 -->
 <h3>CH-AD05 – Resumen de pagos para solicitudes en alquiler</h3>
 
 <h4>Enunciado</h4>
@@ -487,7 +482,6 @@ GROUP BY
 
 <hr />
 
-<!-- CH-AD06 -->
 <h3>CH-AD06 – Valor actual de las propiedades</h3>
 
 <h4>Enunciado</h4>
