@@ -235,28 +235,7 @@ WHERE cp.id_caracteristica=14007
 
 <hr>
 
-<h2>Ejercicio 2 — Propiedades con más de 10 habitaciones</h2>
-
-<h3>Enunciado</h3>
-<p>
-Listar propiedades cuya suma total de habitaciones (habitacion.cantidad) supere las 10.
-</p>
-
-<h3>Resolución sugerida</h3>
-<pre><code>select
-    h.id_propiedad,
-    p.direccion,
-    sum(h.cantidad) as total_habitaciones
-from habitacion h
-inner join propiedad p
-    on p.id = h.id_propiedad
-group by h.id_propiedad, p.direccion
-having total_habitaciones &gt; 10;
-</code></pre>
-
-<hr>
-
-<h2>Ejercicio 3 — Entidad futura: Solicitud de Compra</h2>
+<h2>Ejercicio 2 — Entidad futura: Solicitud de Compra</h2>
 
 <h3>Enunciado</h3>
 <p>
