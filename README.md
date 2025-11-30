@@ -230,7 +230,7 @@ Diseñar el modelo relacional para la entidad futura <code>publicacion</code> de
 </code></pre>
 
 <hr>
-<h2>🧩 Parcial 1 – Inmobiliaria Calcifer &amp; Howl</h2>
+<h2>🧩 Parcial 3</h2>
 
 <h3>CH-AD01 – Agentes y propiedades gestionadas</h3>
 
@@ -381,7 +381,7 @@ ALTER TABLE propiedad
 
 <hr />
 
-<h2>🧩 Parcial 2 – Inmobiliaria Calcifer &amp; Howl</h2>
+<h2>🧩 Parcial 4</h2>
 
 <h3>CH-AD04 – Solicitudes con garantías insuficientes</h3>
 
