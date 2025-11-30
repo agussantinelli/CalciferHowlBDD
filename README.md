@@ -79,8 +79,38 @@ DELIMITER ;
 
 </code></pre>
 
-<hr><hr>
+<hr>
+<h2>Ejercicio 3 — Valor actual, superficie total y valor por m²</h2>
 
+<h3>Enunciado</h3>
+<p>
+Usar:
+</p>
+<ul>
+  <li>último valor registrado en <code>valor_propiedad</code></li>
+  <li>característica “superficie total” (id 14007)</li>
+</ul>
+<p>
+Mostrar id, dirección, valor actual.
+</p>
+
+<h3>Resolución sugerida</h3>
+<pre><code>with ultimo_valor as (
+SELECT vp.id_propiedad, max(vp.fecha_hora_desde) fecha_ult 
+FROM  valor_propiedad vp
+INNER JOIN propiedad pdad ON pdad.id=vp.id_propiedad
+GROUP BY vp.id_propiedad
+)
+
+SELECT pdad.id, pdad.direccion, vp.valor, pdad.superficie
+FROM ultimo_valor uv
+INNER JOIN valor_propiedad vp ON vp.id_propiedad=uv.id_propiedad AND uv.fecha_ult = vp.fecha_hora_desde
+INNER JOIN propiedad pdad ON pdad.id = uv.id_propiedad
+INNER JOIN caracteristica_propiedad cp ON cp.id_propiedad = uv.id_propiedad
+WHERE cp.id_caracteristica=14007
+</code></pre>
+
+<hr>
 <h1>🧩 Parcial 2 — Contratos, Garantías y Pagos</h1>
 
 <h2>Ejercicio 1 — Solicitudes sin garantías suficientes</h2>
@@ -197,38 +227,6 @@ Diseñar el modelo relacional para la entidad futura <code>publicacion</code> de
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
-</code></pre>
-
-<hr>
-
-<h2>Ejercicio 4 — Valor actual, superficie total y valor por m²</h2>
-
-<h3>Enunciado</h3>
-<p>
-Usar:
-</p>
-<ul>
-  <li>último valor registrado en <code>valor_propiedad</code></li>
-  <li>característica “superficie total” (id 14007)</li>
-</ul>
-<p>
-Mostrar id, dirección, valor actual.
-</p>
-
-<h3>Resolución sugerida</h3>
-<pre><code>with ultimo_valor as (
-SELECT vp.id_propiedad, max(vp.fecha_hora_desde) fecha_ult 
-FROM  valor_propiedad vp
-INNER JOIN propiedad pdad ON pdad.id=vp.id_propiedad
-GROUP BY vp.id_propiedad
-)
-
-SELECT pdad.id, pdad.direccion, vp.valor, pdad.superficie
-FROM ultimo_valor uv
-INNER JOIN valor_propiedad vp ON vp.id_propiedad=uv.id_propiedad AND uv.fecha_ult = vp.fecha_hora_desde
-INNER JOIN propiedad pdad ON pdad.id = uv.id_propiedad
-INNER JOIN caracteristica_propiedad cp ON cp.id_propiedad = uv.id_propiedad
-WHERE cp.id_caracteristica=14007
 </code></pre>
 
 <hr>
