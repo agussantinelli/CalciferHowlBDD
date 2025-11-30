@@ -199,11 +199,9 @@ Diseñar el modelo relacional para la entidad futura <code>publicacion</code> de
 
 </code></pre>
 
-<hr><hr>
+<hr>
 
-<h1>🧩 Parcial 3 — Habitaciones, Valores y Expansión del Modelo</h1>
-
-<h2>Ejercicio 1 — Valor actual, superficie total y valor por m²</h2>
+<h2>Ejercicio 4 — Valor actual, superficie total y valor por m²</h2>
 
 <h3>Enunciado</h3>
 <p>
@@ -235,33 +233,3 @@ WHERE cp.id_caracteristica=14007
 
 <hr>
 
-<h2>Ejercicio 2 — Entidad futura: Solicitud de Compra</h2>
-
-<h3>Enunciado</h3>
-<p>
-Diseñar la entidad futura <code>solicitud_compra</code> para gestionar compraventas.
-</p>
-
-<p>Debe incluir:</p>
-<ul>
-  <li>id autoincremental</li>
-  <li>cliente (FK)</li>
-  <li>propiedad (FK)</li>
-  <li>fecha_solicitud</li>
-  <li>monto_ofrecido</li>
-  <li>estado</li>
-</ul>
-
-<h3>Resolución sugerida</h3>
-<pre><code>create table solicitud_compra (
-    id int unsigned not null auto_increment,
-    id_cliente int unsigned not null,
-    id_propiedad int unsigned not null,
-    fecha_solicitud date not null,
-    monto_ofrecido decimal(12,3) not null,
-    estado varchar(20) not null,
-    primary key(id),
-    foreign key(id_cliente) references persona(id),
-    foreign key(id_propiedad) references propiedad(id)
-);
-</code></pre>
