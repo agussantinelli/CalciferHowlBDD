@@ -101,21 +101,42 @@ una solicitud debe tener al menos <strong>dos</strong> garantías aprobadas.
 </ul>
 
 <h3>Resolución sugerida</h3>
-<pre><code>select
-    sc.id,
-    cli.nombre,
-    cli.apellido,
-    p.direccion,
-    (select count(*) from garantia g where g.id_solicitud = sc.id) as total_garantias,
-    (select count(*) 
-     from garantia g 
-     where g.id_solicitud = sc.id and g.estado = 'aprobada') as garantias_aprobadas
-from solicitud_contrato sc
-inner join persona cli
-    on sc.id_cliente = cli.id
-inner join propiedad p
-    on sc.id_propiedad = p.id
-having garantias_aprobadas &lt; 2;
+<pre><code>WITH total_garantias AS (
+    SELECT 
+        sol.id                         AS id_solicitud,
+        COUNT(gar.id_garante)          AS cant_gar_total
+    FROM solicitud_contrato sol
+    LEFT JOIN garantia gar
+        ON gar.id_solicitud = sol.id
+    GROUP BY sol.id
+),
+garantias_aprobadas AS (
+    SELECT
+        sol.id                         AS id_solicitud,
+        COUNT(gar.id_garante)          AS cant_gar_ap
+    FROM solicitud_contrato sol
+    LEFT JOIN garantia gar
+        ON gar.id_solicitud = sol.id
+       AND gar.estado = 'aprobada'
+    GROUP BY sol.id
+)
+
+SELECT 
+    sol.id,
+    CONCAT(cli.nombre, ' ', cli.apellido) AS nombre_cliente,
+    pdad.id                               AS id_propiedad,
+    tg.cant_gar_total,
+    ga.cant_gar_ap
+FROM solicitud_contrato sol
+INNER JOIN persona cli
+    ON cli.id = sol.id_cliente
+INNER JOIN propiedad pdad
+    ON pdad.id = sol.id_propiedad
+INNER JOIN total_garantias tg
+    ON tg.id_solicitud = sol.id
+INNER JOIN garantias_aprobadas ga
+    ON ga.id_solicitud = sol.id
+WHERE ga.cant_gar_ap < 2;
 </code></pre>
 
 <hr>
