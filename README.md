@@ -494,7 +494,7 @@ INNER JOIN propiedad pdad
     ON pdad.id = uv.id_propiedad;
 </code></pre>
 
-<h2>💡 Bonus Track – CH-AD02 (versión extendida)</h2>
+<h2>💡 Bonus Track</h2>
 
 <h3>Enunciado (versión con parámetros OUT)</h3>
 <p>
@@ -584,5 +584,123 @@ CALL visitas_por_periodo(
 
 SELECT @total_visitas  AS total_visitas,
        @total_clientes AS total_clientes;
+</code></pre>
+<h2>💡 Bonus Track 2</h2>
+
+<h3>Enunciado</h3>
+<p>
+Crear un trigger que asegure que todas las garantías nuevas se registren inicializadas correctamente.<br>
+Definir un trigger <code>BEFORE INSERT</code> sobre la tabla <code>garantia</code> que:
+</p>
+<ul>
+  <li>Fuerce el <code>estado</code> a <strong>'a validar'</strong> al insertar un nuevo registro.</li>
+  <li>Deje siempre <code>fecha_baja</code> en <code>NULL</code> al momento del alta.</li>
+</ul>
+<p>
+De este modo, aunque desde la aplicación se intenten insertar otros valores, la tabla <code>garantia</code>
+comienza siempre con un estado consistente.
+</p>
+
+<h3>Resolución sugerida</h3>
+
+<pre><code>DELIMITER $$
+
+CREATE TRIGGER trg_garantia_before_insert
+BEFORE INSERT ON garantia
+FOR EACH ROW
+BEGIN
+    SET NEW.estado     = 'a validar';
+    SET NEW.fecha_baja = NULL;
+END $$
+
+DELIMITER ;
+</code></pre>
+
+<hr />
+
+<h2>💡 Bonus Track 3</h2>
+
+<h3>Enunciado</h3>
+<p>
+Definir una función escalar que devuelva el valor actual de alquiler de una propiedad, usando el histórico
+almacenado en <code>valor_propiedad</code>.
+</p>
+
+<p>Crear la función:</p>
+<ul>
+  <li><code>valor_actual_propiedad(p_id_propiedad INT)</code></li>
+</ul>
+
+<p>La función debe:</p>
+<ol>
+  <li>Buscar en <code>valor_propiedad</code> el registro de esa propiedad con la fecha/hora más reciente
+      (<code>fecha_hora_desde</code>).</li>
+  <li>Devolver el campo <code>valor</code> correspondiente.</li>
+</ol>
+
+<p>Tipo de retorno sugerido: <code>DECIMAL(10,3)</code>.</p>
+
+<h3>Resolución sugerida</h3>
+
+<pre><code>DELIMITER $$
+
+CREATE FUNCTION valor_actual_propiedad(p_id_propiedad INT UNSIGNED)
+RETURNS DECIMAL(10,3)
+DETERMINISTIC
+BEGIN
+    DECLARE v_valor DECIMAL(10,3);
+
+    SELECT vp.valor
+    INTO v_valor
+    FROM valor_propiedad vp
+    WHERE vp.id_propiedad = p_id_propiedad
+    ORDER BY vp.fecha_hora_desde DESC
+    LIMIT 1;
+
+    RETURN v_valor;
+END $$
+
+DELIMITER ;
+</code></pre>
+
+<h3>Ejemplo de uso</h3>
+
+<pre><code>SELECT
+    pdad.id,
+    pdad.direccion,
+    valor_actual_propiedad(pdad.id) AS valor_actual
+FROM propiedad pdad;
+</code></pre>
+
+<hr />
+
+<h2>💡 Bonus Track 4</h2>
+
+<h3>Enunciado</h3>
+<p>
+Listar todas las propiedades, tengan o no solicitudes de contrato asociadas, mostrando:
+</p>
+<ul>
+  <li><strong>id</strong> y <strong>dirección</strong> de la propiedad</li>
+  <li><strong>cantidad de solicitudes de contrato</strong> que tuvo esa propiedad (incluyendo las que están en cualquier estado)</li>
+</ul>
+
+<p>
+Se debe utilizar un <code>LEFT JOIN</code> entre <code>propiedad</code> y <code>solicitud_contrato</code> para que también
+aparezcan las propiedades sin ninguna solicitud, con contador en cero.
+</p>
+
+<h3>Resolución sugerida</h3>
+
+<pre><code>SELECT
+    pdad.id,
+    pdad.direccion,
+    COUNT(sol.id) AS cant_solicitudes
+FROM propiedad pdad
+LEFT JOIN solicitud_contrato sol
+    ON sol.id_propiedad = pdad.id
+GROUP BY
+    pdad.id,
+    pdad.direccion;
 </code></pre>
 
