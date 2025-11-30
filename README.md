@@ -156,23 +156,14 @@ Para solicitudes en estado <code>en alquiler</code>, obtener:
 </ul>
 
 <h3>Resolución sugerida</h3>
-<pre><code>select
-    sc.id,
-    cli.nombre,
-    cli.apellido,
-    p.direccion,
-    count(pa.fecha_hora_pago) as cantidad_pagos,
-    min(pa.fecha_hora_pago) as primer_pago,
-    max(pa.fecha_hora_pago) as ultimo_pago
-from solicitud_contrato sc
-inner join persona cli
-    on sc.id_cliente = cli.id
-inner join propiedad p
-    on sc.id_propiedad = p.id
-inner join pago pa
-    on pa.id_solicitud = sc.id
-where sc.estado = 'en alquiler'
-group by sc.id, cli.nombre, cli.apellido, p.direccion;
+<pre><code>SELECT cli.nombre, cli.apellido, pdad.id, pdad.direccion, MIN(pago.fecha_hora_pago) primer_pago,
+MAX(pago.fecha_hora_pago) ultimo_pago, COUNT(*) cant_pagos
+FROM solicitud_contrato sol
+INNER JOIN persona cli ON sol.id_cliente = cli.id
+INNER JOIN propiedad pdad ON pdad.id = sol.id_propiedad
+INNER JOIN pago ON pago.id_solicitud = sol.id
+WHERE sol.estado = "en alquiler"
+GROUP BY cli.nombre, cli.apellido, pdad.id, pdad.direccion
 </code></pre>
 
 <hr>
