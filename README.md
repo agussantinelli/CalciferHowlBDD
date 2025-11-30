@@ -183,16 +183,20 @@ Diseñar el modelo relacional para la entidad futura <code>publicacion</code> de
 </ul>
 
 <h3>Resolución sugerida</h3>
-<pre><code>create table publicacion (
-    id int unsigned not null auto_increment,
-    id_propiedad int unsigned not null,
-    fecha_publicacion datetime not null,
-    titulo varchar(255) not null,
-    descripcion text,
-    primary key(id),
-    constraint fk_publicacion_propiedad
-        foreign key(id_propiedad) references propiedad(id)
-);
+<pre><code>CREATE TABLE `inmobiliaria_calciferhowl`.`publicacion` (
+  `id` INT UNSIGNED NOT NULL,
+  `idpropiedad` INT UNSIGNED NULL,
+  `fecha_publicacion` DATETIME NULL,
+  `titulo` VARCHAR(45) NULL,
+  `descripcion` VARCHAR(90) NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_publicacion_propiedad_idx` (`idpropiedad` ASC) VISIBLE,
+  CONSTRAINT `fk_publicacion_propiedad`
+    FOREIGN KEY (`idpropiedad`)
+    REFERENCES `inmobiliaria_calciferhowl`.`propiedad` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
 </code></pre>
 
 <hr><hr>
