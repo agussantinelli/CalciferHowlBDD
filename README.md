@@ -493,3 +493,96 @@ INNER JOIN valor_propiedad vp
 INNER JOIN propiedad pdad
     ON pdad.id = uv.id_propiedad;
 </code></pre>
+
+<h2>💡 Bonus Track – CH-AD02 (versión extendida)</h2>
+
+<h3>Enunciado (versión con parámetros OUT)</h3>
+<p>
+Extender el procedimiento almacenado <code>visitas_por_periodo</code> para que, además de listar las visitas entre dos fechas, 
+reciba dos parámetros <strong>OUT</strong>:
+</p>
+<ul>
+  <li><code>total_visitas</code>: cantidad total de visitas en el período.</li>
+  <li><code>total_clientes</code>: cantidad de clientes distintos que realizaron visitas en el período.</li>
+</ul>
+
+<p>El procedimiento debe:</p>
+<ol>
+  <li>Recibir un rango de fechas (<code>fecha_desde</code>, <code>fecha_hasta</code>).</li>
+  <li>Devolver todas las visitas realizadas en ese período, indicando:
+    <ul>
+      <li>cliente (nombre y apellido)</li>
+      <li>propiedad (dirección)</li>
+      <li>agente con el que se realizó la visita (nombre y apellido)</li>
+    </ul>
+  </li>
+  <li>Filtrar por la fecha y hora efectiva de la visita (<code>visita.fecha_hora_visita</code>).</li>
+  <li>Asignar en los parámetros OUT:
+    <ul>
+      <li><code>total_visitas</code>: total de filas devueltas.</li>
+      <li><code>total_clientes</code>: cantidad de <code>id_cliente</code> distintos en ese rango.</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>Resolución sugerida</h3>
+
+<pre><code>DELIMITER $$
+
+CREATE PROCEDURE visitas_por_periodo
+(
+    IN  fecha_desde    DATETIME,
+    IN  fecha_hasta    DATETIME,
+    OUT total_visitas  INT,
+    OUT total_clientes INT
+)
+BEGIN
+    -- Listado de visitas en el período
+    SELECT
+        cli.nombre,
+        cli.apellido,
+        pdad.direccion,
+        CONCAT(ag.nombre, ' ', ag.apellido) AS nombre_agente
+    FROM visita vis
+    INNER JOIN persona cli
+        ON cli.id = vis.id_cliente
+    INNER JOIN persona ag
+        ON ag.id = vis.id_agente
+    INNER JOIN propiedad pdad
+        ON pdad.id = vis.id_propiedad
+    WHERE vis.fecha_hora_visita BETWEEN fecha_desde AND fecha_hasta;
+
+    -- Cantidad total de visitas en el período
+    SELECT COUNT(*)
+    INTO total_visitas
+    FROM visita vis
+    WHERE vis.fecha_hora_visita BETWEEN fecha_desde AND fecha_hasta;
+
+    -- Cantidad de clientes distintos que visitaron en el período
+    SELECT COUNT(DISTINCT vis.id_cliente)
+    INTO total_clientes
+    FROM visita vis
+    WHERE vis.fecha_hora_visita BETWEEN fecha_desde AND fecha_hasta;
+END $$
+
+DELIMITER ;
+</code></pre>
+
+<h3>Ejemplo de invocación</h3>
+
+<p>Ejecutar el procedimiento para el período del 1/6/2025 al 31/7/2025:</p>
+
+<pre><code>SET @total_visitas  = 0;
+SET @total_clientes = 0;
+
+CALL visitas_por_periodo(
+    '2025-06-01 00:00:00',
+    '2025-07-31 23:59:59',
+    @total_visitas,
+    @total_clientes
+);
+
+SELECT @total_visitas  AS total_visitas,
+       @total_clientes AS total_clientes;
+</code></pre>
+
