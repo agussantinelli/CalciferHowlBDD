@@ -5,42 +5,7 @@
 
 <h1>🧩 Parcial 1 — Registro de Propiedades, Asignaciones y Solicitudes</h1>
 
-<h2>Ejercicio 1 — Propiedades con asignación inicial y agentes posteriores</h2>
-
-<h3>Enunciado</h3>
-<p>
-Listar todas las propiedades con su agente inicial y los agentes posteriores que fueron asignados con el tiempo.  
-Para cada propiedad mostrar:
-</p>
-<ul>
-  <li>id y dirección de la propiedad</li>
-  <li>agente inicial (el de menor fecha_hora_desde)</li>
-  <li>cantidad total de agentes que la han gestionado</li>
-</ul>
-
-<h3>Resolución sugerida</h3>
-<pre><code>WITH primera_asignacion AS (
-SELECT aga.id_propiedad, MIN(aga.fecha_hora_desde) fecha_min_asig
-FROM agente_asignado aga
-GROUP BY aga.id_propiedad
-),
- cant_agentes AS (
-SELECT aga.id_propiedad, COUNT(*) cant_ags
-FROM agente_asignado aga
-GROUP BY aga.id_propiedad
-)
-
-SELECT pdad.id, pdad.direccion, ag.id, ag.nombre, ag.apellido, ca.cant_ags
-FROM cant_agentes ca
-INNER JOIN primera_asignacion pa ON pa.id_propiedad=ca.id_propiedad
-INNER JOIN propiedad pdad ON pdad.id = ca.id_propiedad
-INNER JOIN agente_asignado aga ON aga.id_propiedad=pa.id_propiedad AND pa.fecha_min_asig = aga.fecha_hora_desde
-INNER JOIN persona ag ON aga.id_agente = ag.id
-</code></pre>
-
-<hr>
-
-<h2>Ejercicio 2 — Procedimiento para registrar visitas por rango</h2>
+<h2>Ejercicio 1 — Procedimiento para registrar visitas por rango</h2>
 
 <h3>Enunciado</h3>
 <p>
@@ -80,7 +45,7 @@ DELIMITER ;
 </code></pre>
 
 <hr>
-<h2>Ejercicio 3 — Valor actual, superficie total y valor por m²</h2>
+<h2>Ejercicio 2 — Valor actual, superficie total y valor por m²</h2>
 
 <h3>Enunciado</h3>
 <p>
