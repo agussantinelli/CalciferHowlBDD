@@ -39,12 +39,10 @@ WHERE vis.fecha_hora_visita BETWEEN fecha_desde AND fecha_hasta;
 END$$
 
 DELIMITER ;
-;
-
-
-</code></pre>
+;</code></pre>
 
 <hr>
+
 <h2>Ejercicio 2 — Valor actual, superficie total y valor por m²</h2>
 
 <h3>Enunciado</h3>
@@ -72,10 +70,10 @@ FROM ultimo_valor uv
 INNER JOIN valor_propiedad vp ON vp.id_propiedad=uv.id_propiedad AND uv.fecha_ult = vp.fecha_hora_desde
 INNER JOIN propiedad pdad ON pdad.id = uv.id_propiedad
 INNER JOIN caracteristica_propiedad cp ON cp.id_propiedad = uv.id_propiedad
-WHERE cp.id_caracteristica=14007
-</code></pre>
+WHERE cp.id_caracteristica=14007;</code></pre>
 
 <hr>
+
 <h1>🧩 Parcial 2 — Contratos, Garantías y Pagos</h1>
 
 <h2>Ejercicio 1 — Solicitudes sin garantías suficientes</h2>
@@ -131,8 +129,7 @@ INNER JOIN total_garantias tg
     ON tg.id_solicitud = sol.id
 INNER JOIN garantias_aprobadas ga
     ON ga.id_solicitud = sol.id
-WHERE ga.cant_gar_ap &lt; 2;
-</code></pre>
+WHERE ga.cant_gar_ap &lt; 2;</code></pre>
 
 <hr>
 
@@ -151,15 +148,16 @@ Para solicitudes en estado <code>en alquiler</code>, obtener:
 </ul>
 
 <h3>Resolución sugerida</h3>
-<pre><code>SELECT cli.nombre, cli.apellido, pdad.id, pdad.direccion, MIN(pago.fecha_hora_pago) primer_pago,
-MAX(pago.fecha_hora_pago) ultimo_pago, COUNT(*) cant_pagos
+<pre><code>SELECT cli.nombre, cli.apellido, pdad.id, pdad.direccion,
+       MIN(pago.fecha_hora_pago) AS primer_pago,
+       MAX(pago.fecha_hora_pago) AS ultimo_pago,
+       COUNT(*)                  AS cant_pagos
 FROM solicitud_contrato sol
 INNER JOIN persona cli ON sol.id_cliente = cli.id
 INNER JOIN propiedad pdad ON pdad.id = sol.id_propiedad
 INNER JOIN pago ON pago.id_solicitud = sol.id
-WHERE sol.estado = "en alquiler"
-GROUP BY cli.nombre, cli.apellido, pdad.id, pdad.direccion
-</code></pre>
+WHERE sol.estado = 'en alquiler'
+GROUP BY cli.nombre, cli.apellido, pdad.id, pdad.direccion;</code></pre>
 
 <hr>
 
@@ -179,23 +177,23 @@ Diseñar el modelo relacional para la entidad futura <code>publicacion</code> de
 
 <h3>Resolución sugerida</h3>
 <pre><code>CREATE TABLE `inmobiliaria_calciferhowl`.`publicacion` (
-  `id` INT UNSIGNED NOT NULL,
-  `idpropiedad` INT UNSIGNED NULL,
-  `fecha_publicacion` DATETIME NULL,
-  `titulo` VARCHAR(45) NULL,
-  `descripcion` VARCHAR(90) NULL,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idpropiedad` INT UNSIGNED NOT NULL,
+  `fecha_publicacion` DATETIME NOT NULL,
+  `titulo` VARCHAR(100) NOT NULL,
+  `descripcion` VARCHAR(500) NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_publicacion_propiedad_idx` (`idpropiedad` ASC) VISIBLE,
   CONSTRAINT `fk_publicacion_propiedad`
     FOREIGN KEY (`idpropiedad`)
     REFERENCES `inmobiliaria_calciferhowl`.`propiedad` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);
-
-</code></pre>
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+) ENGINE = InnoDB;</code></pre>
 
 <hr>
-<h2>🧩 Parcial 3</h2>
+
+<h1>🧩 Parcial 3</h1>
 
 <h3>CH-AD01 – Agentes y propiedades gestionadas</h3>
 
@@ -211,64 +209,28 @@ Para cada propiedad mostrar:
 </ul>
 
 <h4>Resolución sugerida</h4>
-
 <pre><code>WITH datos_props AS (
-SELECT aga.id_propiedad, COUNT(*) cant_ags, MIN(aga.fecha_hora_desde) prim_fecha
-FROM agente_asignado aga
-group by aga.id_propiedad
+    SELECT aga.id_propiedad,
+           COUNT(*)              AS cant_ags,
+           MIN(aga.fecha_hora_desde) AS prim_fecha
+    FROM agente_asignado aga
+    GROUP BY aga.id_propiedad
 )
-SELECT pdad.id, pdad.direccion, ag.id as id_agente, ag.nombre as nombre_agente, ag.apellido as apellido_agente,
-dp.cant_ags
+SELECT
+    pdad.id,
+    pdad.direccion,
+    ag.id      AS id_agente,
+    ag.nombre  AS nombre_agente,
+    ag.apellido AS apellido_agente,
+    dp.cant_ags
 FROM datos_props dp 
-INNER JOIN agente_asignado aga ON dp.id_propiedad=aga.id_propiedad AND aga.fecha_hora_desde=dp.prim_fecha
-INNER JOIN propiedad pdad ON pdad.id=aga.id_propiedad
-INNER JOIN persona ag ON ag.id=aga.id_agente
-</code></pre>
-
-<hr />
-
-<h3>CH-AD02 – Procedimiento de visitas por período</h3>
-
-<h4>Enunciado</h4>
-<p>
-Crear un procedimiento almacenado <code>visitas_por_periodo</code> que reciba un rango de fechas y devuelva todas las visitas realizadas en ese período, incluyendo:
-</p>
-<ul>
-  <li>cliente (nombre y apellido)</li>
-  <li>propiedad (dirección)</li>
-  <li>agente con el que se realizó la visita (nombre y apellido)</li>
-</ul>
-<p>
-Filtrar por la fecha y hora efectiva de la visita (<code>visita.fecha_hora_visita</code>) entre los parámetros recibidos.
-</p>
-
-<h4>Resolución sugerida</h4>
-
-<pre><code>DELIMITER $$
-
-CREATE PROCEDURE visitas_por_periodo
-(
-    IN fecha_desde DATETIME,
-    IN fecha_hasta DATETIME
-)
-BEGIN
-    SELECT
-        cli.nombre,
-        cli.apellido,
-        pdad.direccion,
-        CONCAT(ag.nombre, ' ', ag.apellido) AS nombre_agente
-    FROM visita vis
-    INNER JOIN persona cli
-        ON cli.id = vis.id_cliente
-    INNER JOIN persona ag
-        ON ag.id = vis.id_agente
-    INNER JOIN propiedad pdad
-        ON pdad.id = vis.id_propiedad
-    WHERE vis.fecha_hora_visita BETWEEN fecha_desde AND fecha_hasta;
-END $$
-
-DELIMITER ;
-</code></pre>
+INNER JOIN agente_asignado aga
+    ON dp.id_propiedad = aga.id_propiedad
+   AND aga.fecha_hora_desde = dp.prim_fecha
+INNER JOIN propiedad pdad
+    ON pdad.id = aga.id_propiedad
+INNER JOIN persona ag
+    ON ag.id = aga.id_agente;</code></pre>
 
 <hr />
 
@@ -289,7 +251,6 @@ Realizar la migración dentro de una transacción.
 </p>
 
 <h4>Resolución sugerida</h4>
-
 <pre><code>CREATE TABLE situacion_propiedad (
     id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
     descripcion VARCHAR(20)  NOT NULL,
@@ -319,147 +280,11 @@ COMMIT;
 
 ALTER TABLE propiedad
     DROP COLUMN situacion,
-    CHANGE COLUMN id_situacion id_situacion INT UNSIGNED NOT NULL;
-</code></pre>
+    CHANGE COLUMN id_situacion id_situacion INT UNSIGNED NOT NULL;</code></pre>
 
 <hr />
 
-<h2>🧩 Parcial 4</h2>
-
-<h3>CH-AD04 – Solicitudes con garantías insuficientes</h3>
-
-<h4>Enunciado</h4>
-<p>
-Una solicitud de contrato debería tener al menos dos garantías con estado <code>'aprobada'</code>.
-</p>
-<p>
-Listar las solicitudes que no cumplen con esa condición (tienen menos de 2 garantías aprobadas), mostrando:
-</p>
-<ul>
-  <li>id de la solicitud</li>
-  <li>cliente (nombre y apellido)</li>
-  <li>propiedad (id y dirección)</li>
-  <li>cantidad total de garantías registradas para la solicitud</li>
-  <li>cantidad de garantías aprobadas</li>
-</ul>
-
-<h4>Resolución sugerida</h4>
-
-<pre><code>WITH total_garantias AS (
-    SELECT
-        gar.id_solicitud,
-        COUNT(*) AS cant_total
-    FROM garantia gar
-    GROUP BY gar.id_solicitud
-),
-garantias_aprobadas AS (
-    SELECT
-        gar.id_solicitud,
-        COUNT(*) AS cant_aprob
-    FROM garantia gar
-    WHERE gar.estado = 'aprobada'
-    GROUP BY gar.id_solicitud
-)
-
-SELECT
-    sol.id,
-    CONCAT(cli.nombre, ' ', cli.apellido) AS cliente,
-    pdad.id        AS id_propiedad,
-    pdad.direccion,
-    tg.cant_total,
-    ga.cant_aprob
-FROM solicitud_contrato sol
-INNER JOIN persona cli
-    ON cli.id = sol.id_cliente
-INNER JOIN propiedad pdad
-    ON pdad.id = sol.id_propiedad
-INNER JOIN total_garantias tg
-    ON tg.id_solicitud = sol.id
-LEFT JOIN garantias_aprobadas ga
-    ON ga.id_solicitud = sol.id
-WHERE ga.cant_aprob &lt; 2
-   OR ga.cant_aprob IS NULL;
-</code></pre>
-
-<hr />
-
-<h3>CH-AD05 – Resumen de pagos para solicitudes en alquiler</h3>
-
-<h4>Enunciado</h4>
-<p>
-Para las solicitudes de contrato que se encuentran en estado <code>'en alquiler'</code>, obtener:
-</p>
-<ul>
-  <li>cliente (nombre y apellido)</li>
-  <li>propiedad (id y dirección)</li>
-  <li>cantidad de pagos realizados</li>
-  <li>fecha y hora del primer pago</li>
-  <li>fecha y hora del último pago</li>
-</ul>
-
-<h4>Resolución sugerida</h4>
-
-<pre><code>SELECT
-    sol.id,
-    CONCAT(cli.nombre, ' ', cli.apellido) AS cliente,
-    pdad.id         AS id_propiedad,
-    pdad.direccion,
-    COUNT(*)        AS cant_pagos,
-    MIN(pago.fecha_hora_pago) AS primer_pago,
-    MAX(pago.fecha_hora_pago) AS ultimo_pago
-FROM solicitud_contrato sol
-INNER JOIN persona cli
-    ON cli.id = sol.id_cliente
-INNER JOIN propiedad pdad
-    ON pdad.id = sol.id_propiedad
-INNER JOIN pago
-    ON pago.id_solicitud = sol.id
-WHERE sol.estado = 'en alquiler'
-GROUP BY
-    sol.id,
-    cli.nombre,
-    cli.apellido,
-    pdad.id,
-    pdad.direccion;
-</code></pre>
-
-<hr />
-
-<h3>CH-AD06 – Valor actual de las propiedades</h3>
-
-<h4>Enunciado</h4>
-<p>
-Usando el historial de valores de alquiler de las propiedades (<code>valor_propiedad</code>), obtener para cada propiedad:
-</p>
-<ul>
-  <li>id de la propiedad</li>
-  <li>dirección</li>
-  <li>valor actual (el del último registro de <code>valor_propiedad</code> según <code>fecha_hora_desde</code>)</li>
-</ul>
-
-<h4>Resolución sugerida</h4>
-
-<pre><code>WITH ultimo_valor AS (
-    SELECT
-        vp.id_propiedad,
-        MAX(vp.fecha_hora_desde) AS fecha_ult
-    FROM valor_propiedad vp
-    GROUP BY vp.id_propiedad
-)
-
-SELECT
-    pdad.id,
-    pdad.direccion,
-    vp.valor AS valor_actual
-FROM ultimo_valor uv
-INNER JOIN valor_propiedad vp
-    ON vp.id_propiedad     = uv.id_propiedad
-   AND vp.fecha_hora_desde = uv.fecha_ult
-INNER JOIN propiedad pdad
-    ON pdad.id = uv.id_propiedad;
-</code></pre>
-
-<h2>💡 Bonus Track</h2>
+<h2>💡 Bonus Track 1 – Procedimiento con parámetros OUT</h2>
 
 <h3>Enunciado (versión con parámetros OUT)</h3>
 <p>
@@ -491,7 +316,6 @@ reciba dos parámetros <strong>OUT</strong>:
 </ol>
 
 <h3>Resolución sugerida</h3>
-
 <pre><code>DELIMITER $$
 
 CREATE PROCEDURE visitas_por_periodo
@@ -530,13 +354,9 @@ BEGIN
     WHERE vis.fecha_hora_visita BETWEEN fecha_desde AND fecha_hasta;
 END $$
 
-DELIMITER ;
-</code></pre>
+DELIMITER ;</code></pre>
 
 <h3>Ejemplo de invocación</h3>
-
-<p>Ejecutar el procedimiento para el período del 1/6/2025 al 31/7/2025:</p>
-
 <pre><code>SET @total_visitas  = 0;
 SET @total_clientes = 0;
 
@@ -548,9 +368,11 @@ CALL visitas_por_periodo(
 );
 
 SELECT @total_visitas  AS total_visitas,
-       @total_clientes AS total_clientes;
-</code></pre>
-<h2>💡 Bonus Track 2</h2>
+       @total_clientes AS total_clientes;</code></pre>
+
+<hr />
+
+<h2>💡 Bonus Track 2 – Trigger sobre garantías</h2>
 
 <h3>Enunciado</h3>
 <p>
@@ -567,7 +389,6 @@ comienza siempre con un estado consistente.
 </p>
 
 <h3>Resolución sugerida</h3>
-
 <pre><code>DELIMITER $$
 
 CREATE TRIGGER trg_garantia_before_insert
@@ -578,12 +399,11 @@ BEGIN
     SET NEW.fecha_baja = NULL;
 END $$
 
-DELIMITER ;
-</code></pre>
+DELIMITER ;</code></pre>
 
 <hr />
 
-<h2>💡 Bonus Track 3</h2>
+<h2>💡 Bonus Track 3 – Función valor_actual_propiedad</h2>
 
 <h3>Enunciado</h3>
 <p>
@@ -606,7 +426,6 @@ almacenado en <code>valor_propiedad</code>.
 <p>Tipo de retorno sugerido: <code>DECIMAL(10,3)</code>.</p>
 
 <h3>Resolución sugerida</h3>
-
 <pre><code>DELIMITER $$
 
 CREATE FUNCTION valor_actual_propiedad(p_id_propiedad INT UNSIGNED)
@@ -625,21 +444,18 @@ BEGIN
     RETURN v_valor;
 END $$
 
-DELIMITER ;
-</code></pre>
+DELIMITER ;</code></pre>
 
 <h3>Ejemplo de uso</h3>
-
 <pre><code>SELECT
     pdad.id,
     pdad.direccion,
     valor_actual_propiedad(pdad.id) AS valor_actual
-FROM propiedad pdad;
-</code></pre>
+FROM propiedad pdad;</code></pre>
 
 <hr />
 
-<h2>💡 Bonus Track 4</h2>
+<h2>💡 Bonus Track 4 – LEFT JOIN propiedades vs solicitudes</h2>
 
 <h3>Enunciado</h3>
 <p>
@@ -656,7 +472,6 @@ aparezcan las propiedades sin ninguna solicitud, con contador en cero.
 </p>
 
 <h3>Resolución sugerida</h3>
-
 <pre><code>SELECT
     pdad.id,
     pdad.direccion,
@@ -666,6 +481,4 @@ LEFT JOIN solicitud_contrato sol
     ON sol.id_propiedad = pdad.id
 GROUP BY
     pdad.id,
-    pdad.direccion;
-</code></pre>
-
+    pdad.direccion;</code></pre>
